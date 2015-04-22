@@ -20,6 +20,36 @@ var metaphone = require('natural').Metaphone
   , alpha = 'abcdefghijklmnopqrstuvwxyz'
 
     /**
+     * Checks if two words are within a character distance of one.
+     * @private
+     * @method similar
+     * @params {String} word - the original word
+     * @params {String} word - the second word to check against
+     * @returns {Boolean} isSimilar - whether or not the words are similar
+     */
+  , similar = function (wordA, wordB) {
+      // if the lengths differ by more than one, then we instantly know the
+      // difference is larger than one
+      if ((wordB.length - wordA.length) > 1) return false
+
+      // if this counter exceeds one at any point, we know that
+      // the distance is too far to try and bridge it
+      var matches = 0
+        , ln = Math.min(wordA.length, wordB.length)
+        , i
+
+      // we check for letter matches, and every difference
+      // is counted as one unless a surrounding character is similar
+      for (i = 0; matches < 2 && i < ln; i += 1) {
+        if (wordA[i] !== wordB[i]) {
+          matches += wordA[i] === wordB[i - 1] || wordA[i] === wordB[i + 1] ? 1 : 0
+        }
+      }
+
+      return matches < 2
+    }
+
+    /**
      * @private
      * @method possibles
      * @params {String} word - the word to find edits for
@@ -148,16 +178,15 @@ Anne.prototype.fix = function (string) {
           // search through dictionary for known words and their
           // frequencies
           var possible = possibles(word, that)
+            , phonetics = metaphone.process(word)
 
           // sort to get best probability on top, and remove
           // all non-phonetic possibilties
           possible = possible.filter(function (test) {
-            return metaphone.compare(word, test[0])
+            return metaphone.compare(word, test[0]) || similar(phonetics, metaphone.process(test[0]))
           }).sort(function (a, b) {
             return b[1] - a[1]
           })
-
-          //console.log(possible)
 
           // simply return the final word found by the search
           return possible.length > 0 ? possible[0][0] : word
