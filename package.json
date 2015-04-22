@@ -1,0 +1,35 @@
+{
+  "name": "anne",
+  "version": "0.0.1",
+  "description": "A statistics-based spell checker.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run coverage && npm run codeclimate && npm run rm",
+    "coverage": "istanbul cover tape --report lcovonly -- test/test-*.js",
+    "codeclimate": "cat coverage/lcov.info | codeclimate",
+    "rm": "rimraf coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OHDB/anne"
+  },
+  "keywords": [
+    "spellcheck",
+    "probability",
+    "statistics"
+  ],
+  "author": "Karim Alibhai",
+  "license": "GPL",
+  "bugs": {
+    "url": "https://github.com/OHDB/anne/issues"
+  },
+  "homepage": "https://github.com/OHDB/anne",
+  "dependencies": {
+    "natural": "^0.2.1"
+  },
+  "devDependencies": {
+    "istanbul": "^0.3.13",
+    "rimraf": "^2.3.2",
+    "tape": "^4.0.0"
+  }
+}

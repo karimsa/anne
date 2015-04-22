@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+- 0.1
+deploy:
+  provider: npm
+  email: info@ohdb.ca
+  api_key:
+    secure: exM43gJHmmSXyKvVnoCpo0iQ4yrSXpKN4txqUJgyZM+PReokZ3bneS/YEk58DYmV79pw8NAGsTzDddNKdzgvQCre/BawZNWD3XXFSjXtlsCQb1LlpiNI5gXLlWYyBu4HlVbjNRSDtLygvhM5r/PsQYSx5ahX6QbC3M15TSVMetk=
+  on:
+    tags: true
+    repo: OHDB/anne
+addons:
+  code_climate:
+    repo_token: 9704fd9775902b2cdcddf92a003fd65680ccf2c74662e3c2ab85a8d80ce2d6ce
