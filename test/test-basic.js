@@ -1,3 +1,10 @@
+/**
+ * @file test/test-basic.js
+ * @project anne
+ * @license GPLv3.
+ * @copyright 2015 Online Health Database.
+ */
+
 "use strict";
 
 var anne = require('../')
@@ -8,8 +15,9 @@ test('basic ', function (t) {
   anne.learn('this is a test')
   anne.learn('ths is a test')
 
-  t.equal(anne.fixAndLearn('ths is a test'), 'this is a test', 'fixes simple sentence')
-  t.equal(anne.fix('ths is another test'), 'this is another test', 'fixes sentence again')
+  t.equal(anne.fix('ths is a test'), 'this is a test', 'fixes simple sentence')
+  t.equal(anne.fix('ths is another test'), 'this is another test', 'fixes longer sentence')
+  t.equal(anne.fix('thi is yet another test'), 'this is yet another test', 'fixes another sentence')
 
   t.end()
 })

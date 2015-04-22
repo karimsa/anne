@@ -17,34 +17,52 @@ var metaphone = require('natural').Metaphone
       this.dict = {}
     }
 
+  , alpha = 'abcdefghijklmnopqrstuvwxyz'
+
     /**
-     * Checks if two words are within a character distance of one.
      * @private
-     * @method similar
-     * @params {String} word - the original word
-     * @params {String} word - the second word to check against
-     * @returns {Boolean} isSimilar - whether or not the words are similar
+     * @method possibles
+     * @params {String} word - the word to find edits for
+     * @returns {Array} possibilities - all edit possiblities of word
      */
-  , similar = function (wordA, wordB) {
-      // if the lengths differ by more than one, then we instantly know the
-      // difference is larger than one
-      if ((wordB.length - wordA.length) > 1) return false
-
-      // if this counter exceeds one at any point, we know that
-      // the distance is too far to try and bridge it
-      var matches = 0
-        , ln = Math.min(wordA.length, wordB.length)
+  , possibles = function (word, anne) {
+      var edits = {}
+        , total = 0
         , i
+        , j
+        , add = function (poss) {
+            if (!edits[poss]) {
+              var f = anne.freq(poss)
+              if (f > 0) {
+                edits[poss] = f
+                total += f
+              }
+            }
+          }
 
-      // we check for letter matches, and every difference
-      // is counted as one unless a surrounding character is similar
-      for (i = 0; matches < 2 && i < ln; i += 1) {
-        if (wordA[i] !== wordB[i]) {
-          matches += wordA[i] === wordB[i - 1] || wordA[i] === wordB[i + 1] ? 1 : 0
+      for (i = 0; i < word.length + 1; i += 1) {
+        if (i > 0) {
+          // handle deletes
+          add(word.substr(0, i - 1) + word.substr(i))
+
+          // handle transposes
+          add(word.substr(0, i - 1) + word.substr(i, i + 1) + word.substr(i - 1, i) + word.substr(i + 1))
+        }
+
+        for (j = 0; j < alpha.length; j += 1) {
+          // handle replaces
+          if (i > 0) {
+            add(word.substr(0, i - 1) + alpha[j] + word.substr(i))
+          }
+
+          // handle inserts
+          add(word.substr(0, i) + alpha[j] + word.substr(i))
         }
       }
 
-      return matches < 2
+      return Object.keys(edits).map(function (poss) {
+        return [poss, edits[poss] / total]
+      })
     }
 
 /**
@@ -60,21 +78,48 @@ Anne.prototype.learn = function (string) {
   // conjunctions even though we don't like them
   string.split(/\s+/g).forEach(function (word) {
     // only pay attention to proper words
-    if (word.length > 1 && word.match(/[a-z']*/i)) {
-      // add the word to the frequency table if it does
-      // not already exist there
-      if (!that.dict.hasOwnProperty(word)) {
-        that.dict[word] = 0
-      }
+    if (word.length > 1 && word.match(/[a-z\']*/i)) {
+        // also add the word to our dictionary, so
+        // that during future searches, we don't have
+        // to visit the entire dictionary to find a correction
+        var prev = that.dict, i
+        for (i = 0; i < word.length; i += 1) {
+          if (!prev[word[i]]) {
+            prev[word[i]] = {}
+          }
 
-      // increase the frequency to account for current
-      // findings
-      that.dict[word] += 1
+          prev = prev[word[i]]
+        }
+
+        // record word frequency
+        if (prev._ === undefined) {
+          prev._ = 0
+        }
+
+        prev._ += 1
     }
   })
 
   // continue chaining
   return this
+}
+
+/**
+ * Get the frequency count of a word.
+ * @memberof Anne
+ * @method freq
+ * @param {String} word - the word to get the frequency of
+ * @returns {Number} frequency - the frequency count of the word
+ */
+Anne.prototype.freq = function (word) {
+  var prev = this.dict, i
+
+  for (i = 0; i < word.length; i += 1) {
+    if (!prev[word[i]]) return 0
+    prev = prev[word[i]]
+  }
+
+  return prev._
 }
 
 /**
@@ -86,20 +131,23 @@ Anne.prototype.learn = function (string) {
  */
 Anne.prototype.fix = function (string) {
   // split by spaces, and fix words individually
-  var dict = this.dict
-    , fixed = string.split(/\s+/g).map(function (word) {
-        if (word.length > 1 && word.match(/[a-z']*/)) {
-          // worst case scenario should be to use the original
-          // word, but with low unknown certainty
-          var known, possible = []
+  var that = this
+    , isSimple = function (obj) {
+        var i
 
-          // go through only known words, and stay within
-          // a string-length of one
-          for (known in dict) {
-            if (dict.hasOwnProperty(known) && similar(word, known)) {
-              possible.push([known, dict[known]])
-            }
+        for (i in obj) {
+          if (obj.hasOwnProperty(i) && i !== '_') {
+            return false
           }
+        }
+
+        return true
+      }
+    , fixed = string.split(/\s+/g).map(function (word) {
+        if (word.length > 1 && word.match(/[a-z\']*/)) {
+          // search through dictionary for known words and their
+          // frequencies
+          var possible = possibles(word, that)
 
           // sort to get best probability on top, and remove
           // all non-phonetic possibilties
@@ -108,6 +156,8 @@ Anne.prototype.fix = function (string) {
           }).sort(function (a, b) {
             return b[1] - a[1]
           })
+
+          //console.log(possible)
 
           // simply return the final word found by the search
           return possible.length > 0 ? possible[0][0] : word
