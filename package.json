@@ -28,6 +28,7 @@
     "natural": "^0.2.1"
   },
   "devDependencies": {
+    "codeclimate-test-reporter": "0.0.4",
     "istanbul": "^0.3.13",
     "rimraf": "^2.3.2",
     "tape": "^4.0.0"
