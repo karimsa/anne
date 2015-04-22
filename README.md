@@ -1,6 +1,8 @@
 # Anne [![Build Status](http://img.shields.io/travis/OHDB/anne.svg?style=flat)](https://travis-ci.org/OHDB/anne) [![View on NPM](http://img.shields.io/npm/dm/anne.svg?style=flat)](http://npmjs.org/package/anne) [![code climate](http://img.shields.io/codeclimate/github/OHDB/anne.svg?style=flat)](https://codeclimate.com/github/OHDB/anne) [![code coverage](http://img.shields.io/codeclimate/coverage/github/OHDB/anne.svg?style=flat)](https://codeclimate.com/github/OHDB/anne)
 
-A statistics-based spell checker.
+A statistics and phonetics based spell checker.
+
+*Partially refactored from [NaturalNode/natural](https://github.com/NaturalNode/natural)*
 
 [![NPM](https://nodei.co/npm/anne.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/anne/)
 
