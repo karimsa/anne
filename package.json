@@ -1,6 +1,6 @@
 {
   "name": "anne",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A statistics-based spell checker.",
   "main": "index.js",
   "scripts": {
