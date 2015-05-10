@@ -1,5 +1,5 @@
 /**
- * @file index.js
+w * @file index.js
  * @project anne
  * @license GPLv3.
  * @copyright 2015 Online Health Database.
@@ -114,7 +114,7 @@ Anne.prototype.learn = function (string) {
         // to visit the entire dictionary to find a correction
         var prev = that.dict, i
         for (i = 0; i < word.length; i += 1) {
-          if (!prev[word[i]]) {
+          if (prev[word[i]] === undefined) {
             prev[word[i]] = {}
           }
 
@@ -131,6 +131,67 @@ Anne.prototype.learn = function (string) {
   })
 
   // continue chaining
+  return this
+}
+
+/**
+ * Define a word as definitely existing in proper form.
+ * @memberof Anne
+ * @method define
+ * @param {String} word - the word to define
+ */
+Anne.prototype.define = function (word) {
+  word = word.trim()
+
+  // we want to make sure that the given string has a word
+  // and no whitespaces, or funny things happen
+  if (word) {
+    var prev = this.dict, i
+
+    // define the word in the dictionary the way we usually
+    // do for learning
+    for (i = 0; i < word.length; i += 1) {
+      if (prev[word[i]] === undefined) {
+        prev[word[i]] = {}
+      }
+
+      prev = prev[word[i]]
+    }
+
+    // the frequency being set to infinity allows us to
+    // always keep the word at the top of a fixlist
+    prev._ = Infinity
+  }
+
+  // continue chaining
+  return this
+}
+
+/**
+ * Import a dictionary or word list as definite spellings.
+ * @memberof Anne
+ * @method import
+ * @params {String|Array} word list - a list of words to define as definites
+ */
+Anne.prototype.import = function (wlist) {
+  // this splits by whitespaces including newlines and commas, so
+  // one should be able to feed in a sentence, a CSV, or a newline
+  // separated word list
+  if (typeof wlist === 'string') {
+    wlist = wlist.split(/\s+/g)
+  }
+
+  // at this point, only arrays as justifiable
+  if (wlist instanceof Array) {
+    var i
+
+    // make every word a "definite" causing it to populate
+    // to the top of its edit lists and fixlists
+    for (i = 0; i < wlist.length; i += 1) {
+      this.define(wlist[i])
+    }
+  }
+
   return this
 }
 
@@ -160,19 +221,9 @@ Anne.prototype.freq = function (word) {
  * @returns {String} fixed sentence - input sentence with words replaced with correct words.
  */
 Anne.prototype.fix = function (string) {
-  // split by spaces, and fix words individually
   var that = this
-    , isSimple = function (obj) {
-        var i
 
-        for (i in obj) {
-          if (obj.hasOwnProperty(i) && i !== '_') {
-            return false
-          }
-        }
-
-        return true
-      }
+      // split by spaces, and fix words individually
     , fixed = string.split(/\s+/g).map(function (word) {
         if (word.length > 1 && word.match(/[a-z\']*/)) {
           // search through dictionary for known words and their
